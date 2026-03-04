@@ -253,6 +253,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <p class="auth-sub">Sign in to access your invoices</p>
     <div class="form-group"><label>Email Address</label><input type="email" id="l-email" placeholder="you@company.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <div class="form-group"><label>Password</label><input type="password" id="l-pass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;margin-top:-4px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text2);font-weight:500"><input type="checkbox" id="l-remember" style="width:16px;height:16px;accent-color:var(--p2);cursor:pointer"/> Remember me</label><span style="font-size:12px;color:var(--text3)">Stays signed in</span></div>
     <div id="l-err" class="err-msg" style="display:none"></div>
     <button class="btn-primary" onclick="doLogin()">Sign In →</button>
     <p class="switch-text">No account? <span class="lnk" onclick="switchModal('register')">Create one free →</span></p>
@@ -533,12 +534,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 function doLogin(){
   const e=document.getElementById('l-email').value.trim();
   const p=document.getElementById('l-pass').value;
+  const remember=document.getElementById('l-remember')?.checked||false;
   const errEl=document.getElementById('l-err');
   const U=gU();
   if(!e||!p){errEl.textContent='Please fill in all fields.';errEl.style.display='block';return}
   if(!U[e]){errEl.textContent='No account found. Please register first.';errEl.style.display='block';return}
   if(U[e].password!==p){errEl.textContent='Incorrect password. Please try again.';errEl.style.display='block';return}
   errEl.style.display='none';
+  localStorage.setItem('ix_session',JSON.stringify({email:e,name:U[e].name}));
+  if(remember){localStorage.setItem('ix_remember',JSON.stringify({email:e}));}
+  else{localStorage.removeItem('ix_remember');}
   closeModal();
   startSession(e,U[e].name);
 }
@@ -558,18 +563,17 @@ function doRegister(){
   U[e]={name:n,password:p};sU(U);
   toast('🎉 Account created! Welcome to InvoiceX');
   closeModal();
+  localStorage.setItem('ix_session',JSON.stringify({email:e,name:n}));
   startSession(e,n);
 }
 
 function startSession(e,n){
   session={email:e,name:n};
-  // switch nav
   document.getElementById('nav-landing-btns').style.display='none';
   document.getElementById('nav-app-links').style.display='flex';
   document.getElementById('nav-user-info').style.display='flex';
   document.getElementById('nav-avatar').textContent=n[0].toUpperCase();
   document.getElementById('nav-uname').textContent=n;
-  // switch pages
   document.getElementById('page-landing').style.display='none';
   document.getElementById('page-app').style.display='block';
   goTo('dashboard');
@@ -577,14 +581,22 @@ function startSession(e,n){
 
 function logout(){
   session=null;curView=null;
+  localStorage.removeItem('ix_session');
   document.getElementById('nav-app-links').style.display='none';
   document.getElementById('nav-user-info').style.display='none';
   document.getElementById('nav-landing-btns').style.display='flex';
   document.getElementById('page-app').style.display='none';
   document.getElementById('page-landing').style.display='block';
-  // clear form fields
-  document.getElementById('l-email').value='';
-  document.getElementById('l-pass').value='';
+  // Restore remembered email if set
+  const rem=JSON.parse(localStorage.getItem('ix_remember')||'null');
+  if(rem&&rem.email){
+    document.getElementById('l-email').value=rem.email;
+    document.getElementById('l-pass').value='';
+    const cb=document.getElementById('l-remember');if(cb)cb.checked=true;
+  } else {
+    document.getElementById('l-email').value='';
+    document.getElementById('l-pass').value='';
+  }
 }
 
 function goHome(){
@@ -1006,6 +1018,35 @@ function triggerDownload(inv){
 // ══════ INIT ══════
 renderItems();
 recalc();
+
+// Auto-restore session (persists across tab close / refresh)
+(function(){
+  try {
+    const saved = JSON.parse(localStorage.getItem('ix_session')||'null');
+    if(saved && saved.email && saved.name){
+      const U = gU();
+      // Validate session is still valid (user still exists)
+      if(U[saved.email]){
+        startSession(saved.email, saved.name);
+        // Pre-fill remember me if set
+        const rem = JSON.parse(localStorage.getItem('ix_remember')||'null');
+        if(rem && rem.email){
+          const cb = document.getElementById('l-remember');
+          if(cb) cb.checked = true;
+        }
+        return; // Already logged in, skip landing page
+      }
+    }
+  } catch(err){}
+  // No valid session — show landing, pre-fill email if remembered
+  const rem = JSON.parse(localStorage.getItem('ix_remember')||'null');
+  if(rem && rem.email){
+    const emailEl = document.getElementById('l-email');
+    const cb = document.getElementById('l-remember');
+    if(emailEl) emailEl.value = rem.email;
+    if(cb) cb.checked = true;
+  }
+})();
 </script>
 </body>
 </html>
