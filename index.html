@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InvoiceX — Next-Gen Invoicing</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#03040a;--bg2:#070b14;
+  --glass:rgba(255,255,255,0.04);--glass2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --p1:#7c3aed;--p2:#a855f7;--p3:#c084fc;
+  --cyan:#06b6d4;--green:#10b981;--orange:#f59e0b;--red:#ef4444;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#475569;
+  --glow:rgba(124,58,237,0.4);--glow2:rgba(6,182,212,0.3);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--p1);border-radius:99px}
+
+/* ORBS */
+.orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+.orb1{width:600px;height:600px;background:radial-gradient(circle,rgba(124,58,237,0.18),transparent 70%);top:-150px;left:-150px;animation:o1 10s ease-in-out infinite}
+.orb2{width:500px;height:500px;background:radial-gradient(circle,rgba(6,182,212,0.14),transparent 70%);bottom:-100px;right:-100px;animation:o2 12s ease-in-out infinite}
+.orb3{width:350px;height:350px;background:radial-gradient(circle,rgba(168,85,247,0.1),transparent 70%);top:40%;left:55%;animation:o3 9s ease-in-out infinite}
+@keyframes o1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,-40px)}}
+@keyframes o2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,30px)}}
+@keyframes o3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-20px,20px) scale(1.1)}}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+
+/* TOAST */
+#toast{position:fixed;top:28px;right:28px;z-index:9999;padding:14px 22px;border-radius:14px;font-weight:600;font-size:14px;display:none;backdrop-filter:blur(20px);border:1px solid var(--border2);box-shadow:0 20px 60px rgba(0,0,0,.5);animation:tpop .4s cubic-bezier(.34,1.56,.64,1);color:white}
+@keyframes tpop{from{transform:translateX(80px) scale(.8);opacity:0}to{transform:translateX(0) scale(1);opacity:1}}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;backdrop-filter:blur(24px);background:rgba(3,4,10,0.85);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:68px}
+.nav-brand{display:flex;align-items:center;gap:12px;cursor:pointer}
+.nav-logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--p1),var(--cyan));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:white;box-shadow:0 0 20px var(--glow);flex-shrink:0}
+.nav-brand-name{font-size:20px;font-weight:800;background:linear-gradient(135deg,#fff,var(--p3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-btn{background:none;border:none;color:var(--text2);cursor:pointer;padding:9px 18px;border-radius:10px;font-size:14px;font-family:'Outfit',sans-serif;font-weight:500;transition:all .25s}
+.nav-btn:hover{color:var(--text);background:var(--glass2)}
+.nav-btn.active{color:var(--text);font-weight:600;background:var(--glass2)}
+.nav-new{background:linear-gradient(135deg,var(--p1),var(--p2)) !important;color:white !important;border-radius:10px;padding:9px 20px;font-weight:700;box-shadow:0 0 20px var(--glow);transition:all .25s !important;border:none !important}
+.nav-new:hover{transform:translateY(-2px);box-shadow:0 0 32px var(--glow) !important}
+.nav-user{display:flex;align-items:center;gap:12px;margin-left:20px;padding-left:20px;border-left:1px solid var(--border)}
+.nav-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:white;box-shadow:0 0 15px var(--glow)}
+.nav-uname{color:var(--text2);font-size:13px;font-weight:500}
+.btn-logout{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .25s}
+.btn-logout:hover{background:rgba(239,68,68,.25)}
+.nav-auth-btns{display:flex;gap:8px}
+.btn-nav-login{background:var(--glass);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:9px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .25s}
+.btn-nav-login:hover{background:var(--glass2)}
+.btn-nav-signup{background:linear-gradient(135deg,var(--p1),var(--p2));border:none;color:white;border-radius:10px;padding:9px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .25s;box-shadow:0 0 20px var(--glow)}
+.btn-nav-signup:hover{transform:translateY(-2px);box-shadow:0 0 30px var(--glow)}
+
+/* ══════ LANDING ══════ */
+#page-landing{position:relative;z-index:1}
+.hero{min-height:calc(100vh - 68px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;position:relative}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:99px;padding:7px 18px;font-size:13px;font-weight:600;color:var(--p3);margin-bottom:28px;animation:fadeUp .6s ease both}
+.hero-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--p2);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.hero-title{font-size:clamp(40px,7vw,88px);font-weight:900;line-height:1.05;letter-spacing:-3px;margin-bottom:24px;animation:fadeUp .6s .1s ease both}
+.hero-title span{background:linear-gradient(135deg,var(--p2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:clamp(16px,2.5vw,20px);color:var(--text2);max-width:580px;line-height:1.7;margin-bottom:44px;font-weight:400;animation:fadeUp .6s .2s ease both}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:fadeUp .6s .3s ease both}
+.btn-hero-primary{background:linear-gradient(135deg,var(--p1),var(--p2));color:white;border:none;border-radius:14px;padding:16px 36px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 0 40px var(--glow);transition:all .3s}
+.btn-hero-primary:hover{transform:translateY(-3px);box-shadow:0 0 60px var(--glow)}
+.btn-hero-sec{background:var(--glass);color:var(--text);border:1px solid var(--border2);border-radius:14px;padding:16px 36px;font-size:16px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .3s;backdrop-filter:blur(10px)}
+.btn-hero-sec:hover{background:var(--glass2);transform:translateY(-3px)}
+.hero-note{margin-top:20px;color:var(--text3);font-size:13px;animation:fadeUp .6s .4s ease both}
+
+/* FEATURES */
+.features{padding:100px 40px;max-width:1200px;margin:0 auto}
+.section-label{text-align:center;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--p3);margin-bottom:14px}
+.section-title{text-align:center;font-size:clamp(28px,4vw,44px);font-weight:800;margin-bottom:16px}
+.section-sub{text-align:center;color:var(--text2);font-size:16px;max-width:500px;margin:0 auto 60px;line-height:1.7}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.feat-card{background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:32px;transition:all .3s;position:relative;overflow:hidden}
+.feat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--glow),transparent);opacity:0;transition:opacity .3s}
+.feat-card:hover{border-color:var(--border2);transform:translateY(-6px);box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.feat-card:hover::before{opacity:.04}
+.feat-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:18px}
+.feat-title{font-size:18px;font-weight:700;margin-bottom:10px}
+.feat-desc{color:var(--text2);font-size:14px;line-height:1.7}
+
+/* CTA STRIP */
+.cta-strip{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(6,182,212,.1));border:1px solid rgba(124,58,237,.2);border-radius:28px;padding:60px 40px;text-align:center;max-width:900px;margin:0 auto 100px;position:relative;overflow:hidden}
+.cta-strip::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse,rgba(124,58,237,.08),transparent 60%);pointer-events:none}
+.cta-title{font-size:36px;font-weight:800;margin-bottom:12px}
+.cta-sub{color:var(--text2);font-size:16px;margin-bottom:32px}
+
+/* AUTH MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.auth-modal{background:rgba(7,11,20,0.97);backdrop-filter:blur(30px);border:1px solid var(--border2);border-radius:28px;padding:52px 48px;width:100%;max-width:440px;position:relative;animation:modalIn .4s cubic-bezier(.34,1.2,.64,1)}
+.auth-modal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--p1),var(--cyan),var(--p2));border-radius:28px 28px 0 0}
+@keyframes modalIn{from{transform:translateY(40px) scale(.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+.modal-close{position:absolute;top:20px;right:20px;background:var(--glass);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{background:var(--glass2);color:var(--text)}
+.auth-icon{width:60px;height:60px;background:linear-gradient(135deg,var(--p1),var(--cyan));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 18px;box-shadow:0 0 40px var(--glow);animation:iconPulse 3s ease-in-out infinite}
+@keyframes iconPulse{0%,100%{box-shadow:0 0 40px var(--glow)}50%{box-shadow:0 0 60px var(--glow),0 0 80px rgba(6,182,212,.2)}}
+.auth-title{font-size:26px;font-weight:800;text-align:center;background:linear-gradient(135deg,var(--text),var(--p3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.auth-sub{text-align:center;color:var(--text3);font-size:14px;margin-bottom:28px}
+
+/* FORM SHARED */
+.form-group{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px}
+input,select,textarea{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:13px 16px;font-size:14px;font-family:'Outfit',sans-serif;outline:none;width:100%;transition:all .25s}
+input:focus,select:focus,textarea:focus{border-color:var(--p2);background:rgba(124,58,237,.07);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+select option{background:#0d1117;color:var(--text)}
+textarea{resize:vertical;min-height:80px;line-height:1.5}
+
+/* BUTTONS */
+.btn-primary{background:linear-gradient(135deg,var(--p1),var(--p2));color:white;border:none;border-radius:12px;padding:14px 28px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Outfit',sans-serif;width:100%;transition:all .3s;box-shadow:0 4px 30px var(--glow)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 40px var(--glow)}
+.btn-primary:active{transform:translateY(0)}
+.btn-cyan{background:linear-gradient(135deg,#0891b2,var(--cyan));color:white;border:none;border-radius:12px;padding:12px 22px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .3s;box-shadow:0 4px 20px var(--glow2)}
+.btn-cyan:hover{transform:translateY(-2px);box-shadow:0 8px 30px var(--glow2)}
+.btn-green{background:linear-gradient(135deg,#065f46,var(--green));color:white;border:none;border-radius:12px;padding:12px 22px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .3s;box-shadow:0 4px 20px rgba(16,185,129,.3)}
+.btn-green:hover{transform:translateY(-2px)}
+.btn-ghost{background:var(--glass);color:var(--text2);border:1px solid var(--border);border-radius:12px;padding:12px 22px;font-weight:600;font-size:14px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .25s;backdrop-filter:blur(10px)}
+.btn-ghost:hover{background:var(--glass2);color:var(--text);border-color:var(--border2)}
+.btn-sm-orange{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .25s}
+.btn-sm-orange:hover{background:rgba(245,158,11,.25)}
+.btn-icon{background:none;border:none;cursor:pointer;padding:7px;border-radius:8px;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:16px}
+.btn-icon:hover{background:var(--glass2)}
+.err-msg{color:#fca5a5;font-size:13px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:11px 16px;margin-bottom:8px;animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.switch-text{text-align:center;color:var(--text3);font-size:14px;margin-top:16px}
+.lnk{color:var(--p3);cursor:pointer;font-weight:600;transition:color .2s}
+.lnk:hover{color:var(--cyan)}
+
+/* APP */
+#page-app{display:none;position:relative;z-index:1}
+.view{display:none}
+.view.active{display:block;animation:fadeUp .35s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.main{max-width:1280px;margin:0 auto;padding:40px 32px}
+.page-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;flex-wrap:wrap;gap:16px}
+.page-title{font-size:30px;font-weight:800;background:linear-gradient(135deg,var(--text),var(--text2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.page-sub{color:var(--text3);font-size:14px;margin-top:6px}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:36px}
+.stat-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:20px;padding:24px;position:relative;overflow:hidden;transition:all .3s}
+.stat-card:hover{transform:translateY(-4px);border-color:var(--border2);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.stat-glow{position:absolute;top:-30px;right:-30px;width:110px;height:110px;border-radius:50%;filter:blur(30px);opacity:.35}
+.stat-icon-wrap{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+.stat-val{font-size:26px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
+.stat-lbl{font-size:12px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.8px}
+
+/* TABLE */
+.tbl-wrap{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead tr{background:rgba(0,0,0,.3)}
+th{padding:13px 18px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+tbody tr{border-top:1px solid var(--border);transition:background .2s}
+tbody tr:hover{background:var(--glass2)}
+td{padding:15px 18px;font-size:13px;color:var(--text2);vertical-align:middle}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* FILTER */
+.filter-bar{display:flex;gap:12px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
+.filter-tabs{display:flex;gap:4px;background:rgba(0,0,0,.35);padding:4px;border-radius:12px;border:1px solid var(--border)}
+.ftab{background:none;color:var(--text3);border:none;border-radius:8px;padding:7px 16px;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:500;transition:all .2s}
+.ftab.active{background:var(--glass2);color:var(--text);font-weight:700}
+.ftab:hover:not(.active){color:var(--text2)}
+
+/* CARDS */
+.card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:20px;padding:26px;margin-bottom:20px;transition:border-color .25s}
+.card:focus-within{border-color:var(--border2)}
+.card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:18px;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px}
+.cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* CREATE */
+.create-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:24px;align-items:start}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.items-tbl{width:100%;border-collapse:collapse}
+.items-tbl th{padding:10px 10px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;text-align:left;border-bottom:1px solid var(--border)}
+.items-tbl td{padding:7px 4px;vertical-align:middle}
+.summary-box{background:rgba(0,0,0,.3);border-radius:14px;padding:18px;margin-top:12px;border:1px solid var(--border)}
+.sum-row{display:flex;justify-content:space-between;padding:7px 0;font-size:14px;border-bottom:1px solid rgba(255,255,255,.04)}
+.sum-row:last-child{border-bottom:none}
+.total-bar{background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(6,182,212,.15));border:1px solid rgba(124,58,237,.3);border-radius:16px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.total-label{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.total-amount{font-size:26px;font-weight:900;font-family:'JetBrains Mono',monospace;background:linear-gradient(135deg,var(--p3),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.action-row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px}
+.empty{text-align:center;padding:70px 24px;background:var(--glass);border:1px solid var(--border);border-radius:20px}
+.empty-icon{font-size:52px;margin-bottom:16px}
+.empty-text{color:var(--text3);margin-bottom:24px;font-size:15px}
+
+/* PREVIEW */
+.print-wrap{background:white;border-radius:24px;max-width:820px;margin:0 auto;box-shadow:0 40px 120px rgba(0,0,0,.6);overflow:hidden}
+.print-header{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:40px 48px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px}
+.print-body{padding:40px 48px;background:white;color:#0f172a}
+
+@media print{
+  body *{visibility:hidden!important}
+  .print-wrap,.print-wrap *{visibility:visible!important}
+  .print-wrap{position:fixed;top:0;left:0;width:100%;border-radius:0;box-shadow:none}
+  nav,#page-landing,.page-hdr{display:none!important}
+}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.create-grid{grid-template-columns:1fr}nav{padding:0 18px}.main{padding:24px 16px}}
+@media(max-width:600px){.stats-grid{grid-template-columns:1fr 1fr}.nav-uname{display:none}.row-2{grid-template-columns:1fr}.features-grid{grid-template-columns:1fr}}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+<div id="toast"></div>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav>
+  <div class="nav-brand" onclick="goHome()">
+    <div class="nav-logo-mark">X</div>
+    <span class="nav-brand-name">InvoiceX</span>
+  </div>
+  <!-- App nav (shown when logged in) -->
+  <div class="nav-links" id="nav-app-links" style="display:none">
+    <button class="nav-btn" id="nav-dashboard" onclick="goTo('dashboard')">Dashboard</button>
+    <button class="nav-btn" id="nav-history" onclick="goTo('history')">History</button>
+    <button class="nav-btn nav-new" onclick="startNew()">＋ New Invoice</button>
+  </div>
+  <!-- Landing nav (shown when logged out) -->
+  <div class="nav-auth-btns" id="nav-landing-btns">
+    <button class="btn-nav-login" onclick="openModal('login')">Sign In</button>
+    <button class="btn-nav-signup" onclick="openModal('register')">Get Started Free</button>
+  </div>
+  <!-- User info (shown when logged in) -->
+  <div class="nav-user" id="nav-user-info" style="display:none">
+    <div class="nav-avatar" id="nav-avatar">?</div>
+    <span class="nav-uname" id="nav-uname"></span>
+    <button class="btn-logout" onclick="logout()">Sign out</button>
+  </div>
+</nav>
+
+<!-- ══════════════ AUTH MODAL ══════════════ -->
+<div class="modal-overlay" id="auth-modal" onclick="handleOverlayClick(event)">
+  <!-- LOGIN -->
+  <div class="auth-modal" id="modal-login">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="auth-icon">⚡</div>
+    <h2 class="auth-title">Welcome Back</h2>
+    <p class="auth-sub">Sign in to access your invoices</p>
+    <div class="form-group"><label>Email Address</label><input type="email" id="l-email" placeholder="you@company.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div class="form-group"><label>Password</label><input type="password" id="l-pass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div id="l-err" class="err-msg" style="display:none"></div>
+    <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+    <p class="switch-text">No account? <span class="lnk" onclick="switchModal('register')">Create one free →</span></p>
+  </div>
+  <!-- REGISTER -->
+  <div class="auth-modal" id="modal-register" style="display:none">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="auth-icon">✦</div>
+    <h2 class="auth-title">Create Account</h2>
+    <p class="auth-sub">Start invoicing professionally today</p>
+    <div class="form-group"><label>Full Name</label><input type="text" id="r-name" placeholder="Jane Smith"/></div>
+    <div class="form-group"><label>Email Address</label><input type="email" id="r-email" placeholder="you@company.com"/></div>
+    <div class="form-group"><label>Password</label><input type="password" id="r-pass" placeholder="At least 6 characters"/></div>
+    <div class="form-group"><label>Confirm Password</label><input type="password" id="r-pass2" placeholder="Repeat password" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+    <div id="r-err" class="err-msg" style="display:none"></div>
+    <button class="btn-primary" onclick="doRegister()">Create Account →</button>
+    <p class="switch-text">Already have an account? <span class="lnk" onclick="switchModal('login')">Sign in</span></p>
+  </div>
+</div>
+
+<!-- ══════════════ LANDING PAGE ══════════════ -->
+<div id="page-landing">
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Professional Invoicing Platform
+    </div>
+    <h1 class="hero-title">Create Invoices<br/><span>In Seconds</span></h1>
+    <p class="hero-sub">Beautiful, professional invoices with built-in account management, history tracking, and instant PDF export. Free forever.</p>
+    <div class="hero-btns">
+      <button class="btn-hero-primary" onclick="openModal('register')">Start for Free — It's Free ✦</button>
+      <button class="btn-hero-sec" onclick="openModal('login')">Sign In to Dashboard</button>
+    </div>
+    <p class="hero-note">✓ No credit card &nbsp;&nbsp; ✓ Instant setup &nbsp;&nbsp; ✓ Download as PDF</p>
+  </section>
+
+  <div class="features">
+    <p class="section-label">Everything you need</p>
+    <h2 class="section-title">Built for freelancers &amp; businesses</h2>
+    <p class="section-sub">All the tools you need to create, manage, and track your invoices in one place.</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(124,58,237,.15)">⚡</div>
+        <div class="feat-title">Instant Creation</div>
+        <div class="feat-desc">Create professional invoices in seconds with our streamlined form. Add line items, tax, and discounts effortlessly.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(6,182,212,.15)">📊</div>
+        <div class="feat-title">Invoice History</div>
+        <div class="feat-desc">All your invoices stored securely in your account. Search, filter by status, edit or delete anytime.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(16,185,129,.15)">📥</div>
+        <div class="feat-title">Download as HTML</div>
+        <div class="feat-desc">Download each invoice as a print-ready HTML file or save directly to PDF using your browser's print dialog.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(245,158,11,.15)">💱</div>
+        <div class="feat-title">Multi-Currency</div>
+        <div class="feat-desc">Support for USD, EUR, GBP, INR, CAD, AUD, JPY and more. Invoice clients worldwide in their currency.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(239,68,68,.15)">🔐</div>
+        <div class="feat-title">Secure Accounts</div>
+        <div class="feat-desc">Your data is private and tied to your account. No one else can see your invoices.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(168,85,247,.15)">🎨</div>
+        <div class="feat-title">Beautiful Design</div>
+        <div class="feat-desc">Stunning invoice layouts that make a great impression on your clients. Professional from day one.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:0 40px">
+    <div class="cta-strip">
+      <h2 class="cta-title">Ready to get paid faster?</h2>
+      <p class="cta-sub">Join thousands of freelancers using InvoiceX to manage their billing.</p>
+      <button class="btn-hero-primary" onclick="openModal('register')">Create Your Free Account →</button>
+    </div>
+  </div>
+
+  <footer style="text-align:center;padding:40px;color:var(--text3);font-size:13px;border-top:1px solid var(--border);position:relative;z-index:1">
+    © 2025 InvoiceX — Professional Invoicing Made Simple
+  </footer>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="page-app">
+
+  <!-- DASHBOARD -->
+  <div id="view-dashboard" class="view">
+    <div class="main">
+      <div class="page-hdr">
+        <div><h2 class="page-title" id="dash-greet">Dashboard</h2><p class="page-sub">Here's what's happening with your invoices</p></div>
+        <button class="btn-primary" style="width:auto;padding:13px 28px" onclick="startNew()">＋ Create Invoice</button>
+      </div>
+      <div class="stats-grid" id="dash-stats"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <span style="font-size:17px;font-weight:700;color:var(--text)">Recent Invoices</span>
+        <button class="btn-ghost" style="padding:8px 16px;font-size:13px" onclick="goTo('history')">View all →</button>
+      </div>
+      <div id="dash-table"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="view-history" class="view">
+    <div class="main">
+      <div class="page-hdr">
+        <div><h2 class="page-title">Invoice History</h2><p class="page-sub" id="hist-count"></p></div>
+        <button class="btn-primary" style="width:auto;padding:13px 28px" onclick="startNew()">＋ New Invoice</button>
+      </div>
+      <div class="filter-bar">
+        <input type="text" id="hist-search" placeholder="🔍  Search by client or invoice #..." style="max-width:300px;margin:0" oninput="renderHistory()"/>
+        <div class="filter-tabs">
+          <button class="ftab active" onclick="setFilter(this,'all')">All</button>
+          <button class="ftab" onclick="setFilter(this,'draft')">Draft</button>
+          <button class="ftab" onclick="setFilter(this,'pending')">Pending</button>
+          <button class="ftab" onclick="setFilter(this,'paid')">Paid</button>
+        </div>
+      </div>
+      <div id="hist-table"></div>
+    </div>
+  </div>
+
+  <!-- CREATE -->
+  <div id="view-create" class="view">
+    <div class="main">
+      <div class="page-hdr">
+        <div><h2 class="page-title" id="create-title">New Invoice</h2><p class="page-sub">Fill in the details below</p></div>
+        <button class="btn-ghost" onclick="goBack()">← Cancel</button>
+      </div>
+      <div class="create-grid">
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="cdot" style="background:linear-gradient(135deg,var(--p1),var(--cyan))"></span>Invoice Details</div>
+            <div class="row-2">
+              <div class="form-group"><label>Invoice #</label><input type="text" id="f-num" style="font-family:'JetBrains Mono',monospace;font-size:13px"/></div>
+              <div class="form-group"><label>Status</label>
+                <select id="f-status"><option value="draft">📝 Draft</option><option value="pending">⏳ Pending</option><option value="paid">✅ Paid</option></select>
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="form-group"><label>Issue Date</label><input type="date" id="f-issue"/></div>
+              <div class="form-group"><label>Due Date</label><input type="date" id="f-due"/></div>
+            </div>
+            <div class="form-group"><label>Currency</label>
+              <select id="f-currency" onchange="recalc()">
+                <option value="USD|$">🇺🇸 USD — US Dollar ($)</option>
+                <option value="EUR|€">🇪🇺 EUR — Euro (€)</option>
+                <option value="GBP|£">🇬🇧 GBP — British Pound (£)</option>
+                <option value="INR|₹">🇮🇳 INR — Indian Rupee (₹)</option>
+                <option value="CAD|CA$">🇨🇦 CAD — Canadian Dollar</option>
+                <option value="AUD|A$">🇦🇺 AUD — Australian Dollar</option>
+                <option value="JPY|¥">🇯🇵 JPY — Japanese Yen (¥)</option>
+              </select>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="cdot" style="background:var(--cyan)"></span>From — Your Details</div>
+            <div class="form-group"><label>Name / Company</label><input type="text" id="f-from-name" placeholder="Your Business Name"/></div>
+            <div class="form-group"><label>Email</label><input type="email" id="f-from-email" placeholder="you@business.com"/></div>
+            <div class="form-group"><label>Address</label><textarea id="f-from-addr" placeholder="Street, City, Country"></textarea></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="cdot" style="background:var(--green)"></span>Bill To — Client</div>
+            <div class="form-group"><label>Client Name / Company</label><input type="text" id="f-to-name" placeholder="Client Business Name"/></div>
+            <div class="form-group"><label>Client Email</label><input type="email" id="f-to-email" placeholder="client@company.com"/></div>
+            <div class="form-group"><label>Client Address</label><textarea id="f-to-addr" placeholder="Street, City, Country"></textarea></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="cdot" style="background:var(--orange)"></span>Line Items</div>
+            <div style="overflow-x:auto">
+              <table class="items-tbl">
+                <thead><tr><th style="width:42%">Description</th><th style="width:12%">Qty</th><th style="width:18%">Rate</th><th style="width:18%">Total</th><th style="width:10%"></th></tr></thead>
+                <tbody id="items-body"></tbody>
+              </table>
+            </div>
+            <button class="btn-ghost" style="margin-top:14px;width:auto;font-size:13px;padding:9px 16px" onclick="addItem()">＋ Add Item</button>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="cdot" style="background:var(--p2)"></span>Totals & Tax</div>
+            <div class="row-2">
+              <div class="form-group"><label>Discount (%)</label><input type="number" id="f-disc" value="0" min="0" max="100" oninput="recalc()"/></div>
+              <div class="form-group"><label>Tax Rate (%)</label><input type="number" id="f-tax" value="0" min="0" oninput="recalc()"/></div>
+            </div>
+            <div class="summary-box" id="sum-box"></div>
+            <div class="total-bar"><span class="total-label">Total Due</span><span class="total-amount" id="total-display">$0.00</span></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="cdot" style="background:var(--text3)"></span>Notes & Terms</div>
+            <textarea id="f-notes" placeholder="Payment terms, bank details, thank you message..."></textarea>
+          </div>
+          <div class="action-row">
+            <button class="btn-ghost" onclick="saveInv('draft')">💾 Save Draft</button>
+            <button class="btn-sm-orange" onclick="saveInv('pending')">⏳ Mark Pending</button>
+            <button class="btn-primary" style="width:auto;padding:13px 24px" onclick="saveInv('paid')">✅ Save & Mark Paid</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div id="view-preview" class="view">
+    <div class="main">
+      <div class="page-hdr">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-ghost" onclick="goTo('history')">← Back</button>
+          <button class="btn-ghost" onclick="editCurrent()">✏️ Edit</button>
+          <button class="btn-cyan" onclick="window.print()">🖨 Print / PDF</button>
+          <button class="btn-green" onclick="downloadInvoice()">📥 Download HTML</button>
+        </div>
+      </div>
+      <div class="print-wrap" id="preview-content"></div>
+    </div>
+  </div>
+
+</div><!-- end #page-app -->
+
+<script>
+// ══════ STATE ══════
+let session=null,curView=null,editId=null,histFilter='all',items=[],idc=1;
+
+// ══════ STORAGE ══════
+const gU=()=>JSON.parse(localStorage.getItem('ix_u')||'{}');
+const sU=v=>localStorage.setItem('ix_u',JSON.stringify(v));
+const gAll=()=>JSON.parse(localStorage.getItem('ix_i')||'{}');
+const sAll=v=>localStorage.setItem('ix_i',JSON.stringify(v));
+const gInv=()=>{if(!session)return{};const a=gAll();return a[session.email]||{}};
+const sInv=d=>{const a=gAll();a[session.email]=d;sAll(a)};
+
+// ══════ UTILS ══════
+const uid=()=>Math.random().toString(36).slice(2,8).toUpperCase();
+const fmt=n=>Number(n||0).toFixed(2);
+const today=()=>new Date().toISOString().slice(0,10);
+const due30=()=>{const d=new Date();d.setDate(d.getDate()+30);return d.toISOString().slice(0,10)};
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const getSym=()=>(document.getElementById('f-currency')?.value||'USD|$').split('|')[1]||'$';
+
+// ══════ TOAST ══════
+function toast(msg,t='ok'){
+  const el=document.getElementById('toast');
+  const cfg={
+    ok:{bg:'linear-gradient(135deg,#064e3b,#065f46)',bd:'rgba(16,185,129,.3)'},
+    info:{bg:'linear-gradient(135deg,#1e3a5f,#1e40af)',bd:'rgba(59,130,246,.3)'},
+    err:{bg:'linear-gradient(135deg,#450a0a,#7f1d1d)',bd:'rgba(239,68,68,.3)'}
+  };
+  const c=cfg[t]||cfg.ok;
+  el.style.background=c.bg;el.style.border='1px solid '+c.bd;
+  el.textContent=msg;el.style.display='block';
+  setTimeout(()=>el.style.display='none',3200);
+}
+
+// ══════ MODAL ══════
+function openModal(type){
+  document.getElementById('auth-modal').classList.add('open');
+  switchModal(type);
+  // clear errors
+  ['l-err','r-err'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none'});
+}
+function closeModal(){
+  document.getElementById('auth-modal').classList.remove('open');
+}
+function handleOverlayClick(e){
+  if(e.target===document.getElementById('auth-modal'))closeModal();
+}
+function switchModal(type){
+  document.getElementById('modal-login').style.display=type==='login'?'block':'none';
+  document.getElementById('modal-register').style.display=type==='register'?'block':'none';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+// ══════ AUTH ══════
+function doLogin(){
+  const e=document.getElementById('l-email').value.trim();
+  const p=document.getElementById('l-pass').value;
+  const errEl=document.getElementById('l-err');
+  const U=gU();
+  if(!e||!p){errEl.textContent='Please fill in all fields.';errEl.style.display='block';return}
+  if(!U[e]){errEl.textContent='No account found. Please register first.';errEl.style.display='block';return}
+  if(U[e].password!==p){errEl.textContent='Incorrect password. Please try again.';errEl.style.display='block';return}
+  errEl.style.display='none';
+  closeModal();
+  startSession(e,U[e].name);
+}
+
+function doRegister(){
+  const n=document.getElementById('r-name').value.trim();
+  const e=document.getElementById('r-email').value.trim();
+  const p=document.getElementById('r-pass').value;
+  const p2=document.getElementById('r-pass2').value;
+  const errEl=document.getElementById('r-err');
+  if(!n||!e||!p||!p2){errEl.textContent='All fields are required.';errEl.style.display='block';return}
+  if(!/\S+@\S+\.\S+/.test(e)){errEl.textContent='Please enter a valid email address.';errEl.style.display='block';return}
+  if(p.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';return}
+  if(p!==p2){errEl.textContent="Passwords don't match.";errEl.style.display='block';return}
+  const U=gU();
+  if(U[e]){errEl.textContent='An account with this email already exists.';errEl.style.display='block';return}
+  U[e]={name:n,password:p};sU(U);
+  toast('🎉 Account created! Welcome to InvoiceX');
+  closeModal();
+  startSession(e,n);
+}
+
+function startSession(e,n){
+  session={email:e,name:n};
+  // switch nav
+  document.getElementById('nav-landing-btns').style.display='none';
+  document.getElementById('nav-app-links').style.display='flex';
+  document.getElementById('nav-user-info').style.display='flex';
+  document.getElementById('nav-avatar').textContent=n[0].toUpperCase();
+  document.getElementById('nav-uname').textContent=n;
+  // switch pages
+  document.getElementById('page-landing').style.display='none';
+  document.getElementById('page-app').style.display='block';
+  goTo('dashboard');
+}
+
+function logout(){
+  session=null;curView=null;
+  document.getElementById('nav-app-links').style.display='none';
+  document.getElementById('nav-user-info').style.display='none';
+  document.getElementById('nav-landing-btns').style.display='flex';
+  document.getElementById('page-app').style.display='none';
+  document.getElementById('page-landing').style.display='block';
+  // clear form fields
+  document.getElementById('l-email').value='';
+  document.getElementById('l-pass').value='';
+}
+
+function goHome(){
+  if(session){goTo('dashboard')}
+  else{document.getElementById('page-landing').style.display='block';document.getElementById('page-app').style.display='none'}
+}
+
+// ══════ NAV ══════
+function goTo(v){
+  if(!session){openModal('login');return}
+  document.querySelectorAll('#page-app .view').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('view-'+v);
+  if(el)el.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const nb=document.getElementById('nav-'+v);if(nb)nb.classList.add('active');
+  curView=v;
+  if(v==='dashboard')renderDash();
+  if(v==='history')renderHistory();
+}
+function goBack(){goTo(editId?'history':'dashboard')}
+
+// ══════ DASHBOARD ══════
+function renderDash(){
+  const h=new Date().getHours();
+  const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const first=session.name.split(' ')[0];
+  document.getElementById('dash-greet').textContent=g+', '+first+' ✦';
+  const invs=Object.values(gInv());
+  const total=invs.reduce((s,i)=>s+(i.total||0),0);
+  const paidC=invs.filter(i=>i.status==='paid').length;
+  const pendC=invs.filter(i=>i.status==='pending').length;
+  const stats=[
+    {lbl:'Total Invoices',val:invs.length,icon:'📄',c1:'#7c3aed',c2:'#a855f7',gc:'rgba(124,58,237,0.25)'},
+    {lbl:'Total Revenue',val:'$'+fmt(total),icon:'💰',c1:'#047857',c2:'#10b981',gc:'rgba(16,185,129,0.25)'},
+    {lbl:'Paid',val:paidC,icon:'✅',c1:'#0369a1',c2:'#06b6d4',gc:'rgba(6,182,212,0.25)'},
+    {lbl:'Pending',val:pendC,icon:'⏳',c1:'#b45309',c2:'#f59e0b',gc:'rgba(245,158,11,0.25)'},
+  ];
+  document.getElementById('dash-stats').innerHTML=stats.map((s,i)=>`
+    <div class="stat-card" style="border-top:2px solid ${s.c2};animation:fadeUp .4s ease ${i*.08}s both">
+      <div class="stat-glow" style="background:${s.gc}"></div>
+      <div class="stat-icon-wrap" style="background:${s.gc}">${s.icon}</div>
+      <div class="stat-val" style="background:linear-gradient(135deg,${s.c1},${s.c2});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${s.val}</div>
+      <div class="stat-lbl">${s.lbl}</div>
+    </div>`).join('');
+  const recent=[...invs].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,6);
+  document.getElementById('dash-table').innerHTML=recent.length?renderTable(recent):`<div class="empty"><div class="empty-icon">🚀</div><p class="empty-text">No invoices yet — create your first one!</p><button class="btn-primary" style="width:auto;margin:0 auto;padding:13px 28px" onclick="startNew()">＋ Create Invoice</button></div>`;
+}
+
+// ══════ HISTORY ══════
+function setFilter(btn,f){
+  histFilter=f;
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderHistory();
+}
+function renderHistory(){
+  const s=(document.getElementById('hist-search')?.value||'').toLowerCase();
+  const invs=Object.values(gInv())
+    .filter(i=>histFilter==='all'||i.status===histFilter)
+    .filter(i=>!s||(i.invoiceNumber||'').toLowerCase().includes(s)||(i.clientName||'').toLowerCase().includes(s))
+    .sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  const all=Object.keys(gInv()).length;
+  document.getElementById('hist-count').textContent=all+' total invoice'+(all!==1?'s':'');
+  document.getElementById('hist-table').innerHTML=invs.length?renderTable(invs):`<div class="empty"><div class="empty-icon">🔍</div><p class="empty-text">${s||histFilter!=='all'?'No invoices match your filters.':'No invoices yet.'}</p></div>`;
+}
+
+// ══════ TABLE ══════
+function renderTable(invs){
+  const sc={draft:{c:'#94a3b8',bg:'rgba(148,163,184,.12)'},pending:{c:'#f59e0b',bg:'rgba(245,158,11,.12)'},paid:{c:'#10b981',bg:'rgba(16,185,129,.12)'}};
+  return `<div class="tbl-wrap"><table>
+    <thead><tr><th>Invoice #</th><th>Client</th><th>Issue Date</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${invs.map((inv,i)=>`<tr style="animation:fadeUp .3s ease ${i*.04}s both">
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text);font-size:12px">${esc(inv.invoiceNumber)}</td>
+      <td style="color:var(--text);font-weight:500">${esc(inv.clientName)||'<span style="color:var(--text3)">—</span>'}</td>
+      <td>${inv.issueDate||'—'}</td>
+      <td>${inv.dueDate||'—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#10b981">${inv.sym||'$'}${fmt(inv.total)}</td>
+      <td><span class="badge" style="background:${sc[inv.status]?.bg||sc.draft.bg};color:${sc[inv.status]?.c||sc.draft.c}">${inv.status}</span></td>
+      <td><div style="display:flex;gap:2px">
+        <button class="btn-icon" title="Preview" onclick="previewInv('${inv.id}')">👁</button>
+        <button class="btn-icon" title="Edit" onclick="editInv('${inv.id}')">✏️</button>
+        <button class="btn-icon" title="Download" onclick="downloadInvoiceById('${inv.id}')">📥</button>
+        <button class="btn-icon" title="Delete" onclick="delInv('${inv.id}')">🗑</button>
+      </div></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ══════ CREATE / EDIT ══════
+function startNew(){
+  if(!session){openModal('login');return}
+  editId=null;items=[{id:idc++,desc:'',qty:1,rate:0}];
+  document.getElementById('create-title').textContent='New Invoice';
+  document.getElementById('f-num').value='INV-'+uid();
+  document.getElementById('f-status').value='draft';
+  document.getElementById('f-issue').value=today();
+  document.getElementById('f-due').value=due30();
+  document.getElementById('f-currency').value='USD|$';
+  ['f-from-name','f-from-email','f-from-addr','f-to-name','f-to-email','f-to-addr','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-disc').value=0;
+  document.getElementById('f-tax').value=0;
+  renderItems();recalc();goTo('create');
+}
+
+function editInv(id){
+  const inv=gInv()[id];if(!inv)return;
+  editId=id;items=inv.items.map(it=>({...it}));
+  document.getElementById('create-title').textContent='Edit Invoice';
+  document.getElementById('f-num').value=inv.invoiceNumber;
+  document.getElementById('f-status').value=inv.status;
+  document.getElementById('f-issue').value=inv.issueDate||'';
+  document.getElementById('f-due').value=inv.dueDate||'';
+  document.getElementById('f-currency').value=inv.cv||'USD|$';
+  document.getElementById('f-from-name').value=inv.fromName||'';
+  document.getElementById('f-from-email').value=inv.fromEmail||'';
+  document.getElementById('f-from-addr').value=inv.fromAddr||'';
+  document.getElementById('f-to-name').value=inv.clientName||'';
+  document.getElementById('f-to-email').value=inv.clientEmail||'';
+  document.getElementById('f-to-addr').value=inv.clientAddr||'';
+  document.getElementById('f-disc').value=inv.disc||0;
+  document.getElementById('f-tax').value=inv.taxRate||0;
+  document.getElementById('f-notes').value=inv.notes||'';
+  renderItems();recalc();goTo('create');
+}
+
+function editCurrent(){const inv=Object.values(gInv()).find(i=>i.id===window._pid);if(inv)editInv(inv.id)}
+
+// ══════ ITEMS ══════
+function addItem(){items.push({id:idc++,desc:'',qty:1,rate:0});recalc();}
+function removeItem(id){if(items.length<=1)return;items=items.filter(it=>it.id!==id);recalc();}
+function updItem(id,f,v){const it=items.find(i=>i.id===id);if(it){it[f]=v;}}
+
+function renderItems(){
+  const tbody=document.getElementById('items-body');
+  // Only do a full rebuild if row count changed
+  if(tbody.querySelectorAll('tr').length!==items.length){
+    tbody.innerHTML=items.map(it=>makeItemRow(it)).join('');
+  } else {
+    // Update only total cells & remove buttons without touching focused inputs
+    items.forEach(it=>{
+      const row=tbody.querySelector('tr[data-id="'+it.id+'"]');
+      if(!row)return;
+      const lineTotal=Number(it.qty)*Number(it.rate);
+      const totalCell=row.querySelector('.item-total');
+      if(totalCell)totalCell.textContent=getSym()+fmt(lineTotal);
+    });
+  }
+}
+
+function makeItemRow(it){
+  return '<tr data-id="'+it.id+'">'+
+    '<td><input type="text" placeholder="Item description" value="'+esc(it.desc||'')+'" style="min-width:150px" '+
+    'oninput="items.find(i=>i.id==='+it.id+').desc=this.value" '+
+    'onblur="softRecalc()"/></td>'+
+    '<td><input type="number" min="1" value="'+it.qty+'" style="width:58px;text-align:center" '+
+    'oninput="items.find(i=>i.id==='+it.id+').qty=this.value;softRecalc()"/></td>'+
+    '<td><input type="number" min="0" step="0.01" value="'+it.rate+'" style="width:88px" '+
+    'oninput="items.find(i=>i.id==='+it.id+').rate=this.value;softRecalc()"/></td>'+
+    '<td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:#10b981;font-size:13px;white-space:nowrap;padding-left:10px" class="item-total">'+getSym()+fmt(Number(it.qty)*Number(it.rate))+'</td>'+
+    '<td>'+(items.length>1?'<button class="btn-icon" style="color:var(--red)" onclick="removeItem('+it.id+')">✕</button>':'')+'</td>'+
+    '</tr>';
+}
+
+// Soft recalc: updates totals WITHOUT rebuilding item rows (preserves focus)
+function softRecalc(){
+  const s=getSym();
+  // Update each row's line total
+  items.forEach(it=>{
+    const row=document.querySelector('#items-body tr[data-id="'+it.id+'"]');
+    if(row){
+      const cell=row.querySelector('.item-total');
+      if(cell)cell.textContent=s+fmt(Number(it.qty)*Number(it.rate));
+    }
+  });
+  // Update summary
+  updateSummary();
+}
+
+function recalc(){
+  // Full rebuild only called when adding/removing rows or editing via code
+  document.getElementById('items-body').innerHTML=items.map(it=>makeItemRow(it)).join('');
+  updateSummary();
+}
+
+function updateSummary(){
+  const s=getSym();
+  const sub=items.reduce((a,it)=>a+(Number(it.qty)*Number(it.rate)),0);
+  const disc=Number(document.getElementById('f-disc')?.value||0);
+  const tax=Number(document.getElementById('f-tax')?.value||0);
+  const dA=sub*(disc/100),tA=(sub-dA)*(tax/100),tot=sub-dA+tA;
+  let h='';
+  h+='<div class="sum-row"><span style="color:var(--text3)">Subtotal</span><span style="color:var(--text2)">'+s+fmt(sub)+'</span></div>';
+  if(disc>0)h+='<div class="sum-row"><span style="color:var(--text3)">Discount ('+disc+'%)</span><span style="color:#f87171">−'+s+fmt(dA)+'</span></div>';
+  if(tax>0)h+='<div class="sum-row"><span style="color:var(--text3)">Tax ('+tax+'%)</span><span style="color:#fcd34d">+'+s+fmt(tA)+'</span></div>';
+  document.getElementById('sum-box').innerHTML=h;
+  document.getElementById('total-display').textContent=s+fmt(tot);
+}
+
+function saveInv(status){
+  if(!session){openModal('login');return}
+  const cv=document.getElementById('f-currency').value;
+  const parts=cv.split('|');const cc=parts[0];const s=parts[1];
+  const sub=items.reduce((a,it)=>a+(Number(it.qty)*Number(it.rate)),0);
+  const disc=Number(document.getElementById('f-disc').value||0);
+  const tax=Number(document.getElementById('f-tax').value||0);
+  const dA=sub*(disc/100),tA=(sub-dA)*(tax/100),tot=sub-dA+tA;
+  const inv={
+    id:editId||uid(),
+    invoiceNumber:document.getElementById('f-num').value,
+    status,
+    issueDate:document.getElementById('f-issue').value,
+    dueDate:document.getElementById('f-due').value,
+    cv,cc,sym:s,
+    fromName:document.getElementById('f-from-name').value,
+    fromEmail:document.getElementById('f-from-email').value,
+    fromAddr:document.getElementById('f-from-addr').value,
+    clientName:document.getElementById('f-to-name').value,
+    clientEmail:document.getElementById('f-to-email').value,
+    clientAddr:document.getElementById('f-to-addr').value,
+    items:items.map(it=>({...it})),
+    disc,taxRate:tax,subtotal:sub,discAmt:dA,taxAmt:tA,total:tot,
+    notes:document.getElementById('f-notes').value,
+    createdAt:editId?(gInv()[editId]?.createdAt||new Date().toISOString()):new Date().toISOString(),
+    updatedAt:new Date().toISOString()
+  };
+  const d=gInv();d[inv.id]=inv;sInv(d);
+  toast('✓ Invoice saved successfully!');
+  editId=null;goTo('history');
+}
+
+function delInv(id){
+  if(!confirm('Delete this invoice permanently? This cannot be undone.'))return;
+  const d=gInv();delete d[id];sInv(d);
+  toast('Invoice deleted.','info');
+  if(curView==='history')renderHistory();else renderDash();
+}
+
+// ══════ BUILD INVOICE HTML ══════
+function buildInvoiceHTML(inv){
+  const s=inv.sym||'$';
+  const sc={draft:{c:'#6b7280',bg:'#f3f4f6'},pending:{c:'#d97706',bg:'#fffbeb'},paid:{c:'#059669',bg:'#ecfdf5'}};
+  const st=sc[inv.status]||sc.draft;
+  const rows=inv.items.map((it,i)=>
+    '<tr style="background:'+(i%2===0?'#f8fafc':'#ffffff')+'">'+
+    '<td style="padding:13px 18px;color:#1e293b;font-size:14px">'+(esc(it.desc)||'—')+'</td>'+
+    '<td style="padding:13px 18px;text-align:center;color:#64748b;font-size:14px">'+it.qty+'</td>'+
+    '<td style="padding:13px 18px;text-align:right;color:#64748b;font-size:14px">'+s+fmt(it.rate)+'</td>'+
+    '<td style="padding:13px 18px;text-align:right;font-weight:700;color:#1e293b;font-size:14px">'+s+fmt(Number(it.qty)*Number(it.rate))+'</td>'+
+    '</tr>'
+  ).join('');
+  let tots='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="color:#64748b;font-size:14px">Subtotal</span><span style="color:#1e293b;font-size:14px">'+s+fmt(inv.subtotal)+'</span></div>';
+  if(inv.disc>0)tots+='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="color:#64748b;font-size:14px">Discount ('+inv.disc+'%)</span><span style="color:#ef4444;font-size:14px">−'+s+fmt(inv.discAmt)+'</span></div>';
+  if(inv.taxRate>0)tots+='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="color:#64748b;font-size:14px">Tax ('+inv.taxRate+'%)</span><span style="color:#64748b;font-size:14px">+'+s+fmt(inv.taxAmt)+'</span></div>';
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Invoice ${esc(inv.invoiceNumber)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#f8fafc;padding:40px 20px;color:#0f172a}
+.wrap{max-width:820px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 40px rgba(0,0,0,.12)}
+.hdr{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:40px 48px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px}
+.body{padding:40px 48px}
+@media print{body{padding:0;background:white}.wrap{box-shadow:none;border-radius:0}}
+@media(max-width:600px){.hdr,.body{padding:28px 24px}.hdr{flex-direction:column}.hdr>div:last-child{text-align:left!important}}
+</style></head><body>
+<div class="wrap">
+<div class="hdr">
+  <div>
+    <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Invoice</div>
+    <div style="font-size:40px;font-weight:900;color:white;letter-spacing:-2px;font-family:'Outfit',sans-serif">${esc(inv.invoiceNumber)}</div>
+    <div style="margin-top:14px;display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;background:${st.bg};color:${st.c};font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px">
+      <span style="width:6px;height:6px;border-radius:50%;background:${st.c};display:inline-block"></span>${inv.status}
+    </div>
+  </div>
+  <div style="text-align:right">
+    ${inv.fromName?'<div style="font-size:17px;font-weight:800;color:white">'+esc(inv.fromName)+'</div>':''}
+    ${inv.fromEmail?'<div style="color:rgba(255,255,255,.6);font-size:13px;margin-top:4px">'+esc(inv.fromEmail)+'</div>':''}
+    ${inv.fromAddr?'<div style="color:rgba(255,255,255,.5);font-size:13px;margin-top:4px;white-space:pre-line">'+esc(inv.fromAddr)+'</div>':''}
+  </div>
+</div>
+<div class="body">
+  <div style="display:flex;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:20px">
+    <div style="background:#f8fafc;border-radius:12px;padding:18px 22px;min-width:200px">
+      <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px">Bill To</div>
+      <div style="font-weight:800;color:#0f172a;font-size:16px">${esc(inv.clientName)||'—'}</div>
+      ${inv.clientEmail?'<div style="color:#64748b;font-size:13px;margin-top:3px">'+esc(inv.clientEmail)+'</div>':''}
+      ${inv.clientAddr?'<div style="color:#94a3b8;font-size:13px;margin-top:3px;white-space:pre-line">'+esc(inv.clientAddr)+'</div>':''}
+    </div>
+    <div style="text-align:right">
+      ${[['Issue Date',inv.issueDate],['Due Date',inv.dueDate],['Currency',inv.cc||'USD']].map(([l,v])=>
+        '<div style="margin-bottom:7px;display:flex;gap:12px;justify-content:flex-end;align-items:center">'+
+        '<span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">'+l+'</span>'+
+        '<span style="color:#1e293b;font-weight:700;font-size:14px;background:#f8fafc;padding:3px 10px;border-radius:7px">'+v+'</span>'+
+        '</div>').join('')}
+    </div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:28px;border-radius:10px;overflow:hidden">
+    <thead><tr style="background:#1e293b">
+      ${['Description','Qty','Rate','Total'].map((h,i)=>'<th style="padding:13px 18px;text-align:'+(i===0?'left':i===1?'center':'right')+';color:white;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px">'+h+'</th>').join('')}
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:28px">
+    <div style="min-width:280px">
+      ${tots}
+      <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:12px;padding:16px 20px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:800;font-size:13px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px">Total Due</span>
+        <span style="font-weight:900;font-size:24px;color:white;font-family:'Outfit',sans-serif">${s}${fmt(inv.total)}</span>
+      </div>
+    </div>
+  </div>
+  ${inv.notes?'<div style="border-top:1px solid #f1f5f9;padding-top:22px"><div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px">Notes & Terms</div><div style="color:#64748b;font-size:14px;line-height:1.7;white-space:pre-line">'+esc(inv.notes)+'</div></div>':''}
+  <div style="margin-top:36px;padding-top:18px;border-top:1px solid #f1f5f9;text-align:center;color:#cbd5e1;font-size:12px">Generated with InvoiceX</div>
+</div>
+</div>
+</body></html>`;
+}
+
+// ══════ PREVIEW ══════
+function previewInv(id){
+  const inv=gInv()[id];if(!inv)return;
+  window._pid=id;
+  document.getElementById('preview-content').innerHTML=buildInvoiceHTML(inv)
+    .replace(/^[\s\S]*?<body[^>]*>/,'')
+    .replace(/<\/body>[\s\S]*$/,'')
+    .replace('<div class="wrap">','<div>')
+    .replace(/class="hdr"/,'class="print-header"')
+    .replace(/class="body"/,'class="print-body"');
+  // Build proper inner HTML from the invoice
+  buildPreviewHTML(inv);
+  goTo('preview');
+}
+
+function buildPreviewHTML(inv){
+  const s=inv.sym||'$';
+  const sc={draft:{c:'#6b7280',bg:'#f3f4f6'},pending:{c:'#d97706',bg:'#fffbeb'},paid:{c:'#059669',bg:'#ecfdf5'}};
+  const st=sc[inv.status]||sc.draft;
+  const rows=inv.items.map((it,i)=>
+    '<tr style="background:'+(i%2===0?'#f8fafc':'#ffffff')+'">'+
+    '<td style="padding:13px 18px;color:#1e293b;font-size:14px">'+(esc(it.desc)||'—')+'</td>'+
+    '<td style="padding:13px 18px;text-align:center;color:#64748b;font-size:14px">'+it.qty+'</td>'+
+    '<td style="padding:13px 18px;text-align:right;color:#64748b;font-size:14px">'+s+fmt(it.rate)+'</td>'+
+    '<td style="padding:13px 18px;text-align:right;font-weight:700;color:#1e293b;font-size:14px">'+s+fmt(Number(it.qty)*Number(it.rate))+'</td>'+
+    '</tr>'
+  ).join('');
+  let tots='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="color:#64748b;font-size:14px">Subtotal</span><span style="color:#1e293b;font-size:14px">'+s+fmt(inv.subtotal)+'</span></div>';
+  if(inv.disc>0)tots+='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="color:#64748b;font-size:14px">Discount ('+inv.disc+'%)</span><span style="color:#ef4444;font-size:14px">−'+s+fmt(inv.discAmt)+'</span></div>';
+  if(inv.taxRate>0)tots+='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="color:#64748b;font-size:14px">Tax ('+inv.taxRate+'%)</span><span style="color:#64748b;font-size:14px">+'+s+fmt(inv.taxAmt)+'</span></div>';
+  document.getElementById('preview-content').innerHTML=
+    '<div class="print-header">'+
+    '<div>'+
+    '<div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Invoice</div>'+
+    '<div style="font-size:40px;font-weight:900;color:white;letter-spacing:-2px;font-family:Outfit,sans-serif">'+esc(inv.invoiceNumber)+'</div>'+
+    '<div style="margin-top:14px;display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;background:'+st.bg+';color:'+st.c+';font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px">'+
+    '<span style="width:6px;height:6px;border-radius:50%;background:'+st.c+';display:inline-block"></span>'+inv.status+
+    '</div></div>'+
+    '<div style="text-align:right">'+
+    (inv.fromName?'<div style="font-size:17px;font-weight:800;color:white">'+esc(inv.fromName)+'</div>':'')+
+    (inv.fromEmail?'<div style="color:rgba(255,255,255,.6);font-size:13px;margin-top:4px">'+esc(inv.fromEmail)+'</div>':'')+
+    (inv.fromAddr?'<div style="color:rgba(255,255,255,.5);font-size:13px;margin-top:4px;white-space:pre-line">'+esc(inv.fromAddr)+'</div>':'')+
+    '</div></div>'+
+    '<div class="print-body">'+
+    '<div style="display:flex;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:20px">'+
+    '<div style="background:#f8fafc;border-radius:12px;padding:18px 22px;min-width:200px">'+
+    '<div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px">Bill To</div>'+
+    '<div style="font-weight:800;color:#0f172a;font-size:16px">'+(esc(inv.clientName)||'—')+'</div>'+
+    (inv.clientEmail?'<div style="color:#64748b;font-size:13px;margin-top:3px">'+esc(inv.clientEmail)+'</div>':'')+
+    (inv.clientAddr?'<div style="color:#94a3b8;font-size:13px;margin-top:3px;white-space:pre-line">'+esc(inv.clientAddr)+'</div>':'')+
+    '</div>'+
+    '<div style="text-align:right">'+
+    [['Issue Date',inv.issueDate],['Due Date',inv.dueDate],['Currency',inv.cc||'USD']].map(([l,v])=>
+      '<div style="margin-bottom:7px;display:flex;gap:12px;justify-content:flex-end;align-items:center">'+
+      '<span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">'+l+'</span>'+
+      '<span style="color:#1e293b;font-weight:700;font-size:14px;background:#f8fafc;padding:3px 10px;border-radius:7px">'+v+'</span>'+
+      '</div>').join('')+
+    '</div></div>'+
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:28px;border-radius:10px;overflow:hidden">'+
+    '<thead><tr style="background:#1e293b">'+
+    ['Description','Qty','Rate','Total'].map((h,i)=>'<th style="padding:13px 18px;text-align:'+(i===0?'left':i===1?'center':'right')+';color:white;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px">'+h+'</th>').join('')+
+    '</tr></thead><tbody>'+rows+'</tbody></table>'+
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:28px">'+
+    '<div style="min-width:280px">'+tots+
+    '<div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:12px;padding:16px 20px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">'+
+    '<span style="font-weight:800;font-size:13px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px">Total Due</span>'+
+    '<span style="font-weight:900;font-size:24px;color:white">'+s+fmt(inv.total)+'</span>'+
+    '</div></div></div>'+
+    (inv.notes?'<div style="border-top:1px solid #f1f5f9;padding-top:22px"><div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px">Notes & Terms</div><div style="color:#64748b;font-size:14px;line-height:1.7;white-space:pre-line">'+esc(inv.notes)+'</div></div>':'')+
+    '<div style="margin-top:36px;padding-top:18px;border-top:1px solid #f1f5f9;text-align:center;color:#cbd5e1;font-size:12px">Generated with InvoiceX</div>'+
+    '</div>';
+}
+
+// ══════ DOWNLOAD ══════
+function downloadInvoice(){
+  const inv=gInv()[window._pid];
+  if(!inv){toast('No invoice loaded.','err');return}
+  triggerDownload(inv);
+}
+
+function downloadInvoiceById(id){
+  const inv=gInv()[id];
+  if(!inv){toast('Invoice not found.','err');return}
+  triggerDownload(inv);
+}
+
+function triggerDownload(inv){
+  const html=buildInvoiceHTML(inv);
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='Invoice-'+inv.invoiceNumber+'.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('📥 Invoice downloaded as HTML file!');
+}
+
+// ══════ INIT ══════
+renderItems();
+recalc();
+</script>
+</body>
+</html>
